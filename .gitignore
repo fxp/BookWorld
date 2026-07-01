@@ -7,3 +7,7 @@ run.sh
 .vscode/
 nohup.out
 BookWorld_test.py
+.env
+.venv/
+*.local
+.gstack/

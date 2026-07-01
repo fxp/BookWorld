@@ -5,12 +5,39 @@ class PresetPanel {
         this.container = document.querySelector('.preset-container');
         this.select = document.querySelector('.preset-select');
         this.submitBtn = document.querySelector('.preset-submit-btn');
+        this.uploadPanel = null;
         this.init();
     }
 
     init() {
         this.loadPresets();
         this.setupEventListeners();
+        this._injectUploadButton();
+    }
+
+    _injectUploadButton() {
+        if (!this.container) return;
+
+        const btn = document.createElement('button');
+        btn.className = 'preset-upload-btn';
+        btn.innerHTML = '<i class="fas fa-upload" style="margin-right:6px"></i>上传故事 / Upload Story';
+        this.container.appendChild(btn);
+
+        btn.addEventListener('click', () => {
+            if (!this.uploadPanel) {
+                this.uploadPanel = new window.UploadPanel((presetFile) => {
+                    // Refresh preset list and auto-select the new world
+                    this.loadPresets().then(() => {
+                        if (this.select) {
+                            this.select.value = presetFile;
+                            this.currentPreset = presetFile;
+                            if (this.submitBtn) this.submitBtn.disabled = false;
+                        }
+                    });
+                });
+            }
+            this.uploadPanel.show();
+        });
     }
 
     async loadPresets() {

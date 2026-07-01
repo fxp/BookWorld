@@ -4,63 +4,75 @@ sys.path.append("../")
 from bw_utils import *
 from modules.embedding import get_embedding_model
 
-try:
-    from langchain_experimental.generative_agents.memory import GenerativeAgentMemory
-except Exception:
-    from langchain_experimental.generative_agents import GenerativeAgentMemory
-
-try:
-    from langchain_classic.retrievers import TimeWeightedVectorStoreRetriever
-except Exception:
-    try:
-        from langchain.retrievers import TimeWeightedVectorStoreRetriever
-    except Exception:
-        raise ImportError("装 langchain-classic")
-
-try:
-    from langchain_huggingface import HuggingFaceEmbeddings
-except Exception:
-    try:
-        from langchain_community.embeddings import HuggingFaceEmbeddings
-    except Exception:
-        raise ImportError("装 langchain-huggingface/langchain_community+sentence-transformers")
-
-try:
-    from langchain_community.llms.tongyi import Tongyi
-except Exception:
-    try:
-        from langchain_community.llms import Tongyi
-    except Exception:
-        Tongyi = None  
-
-try:
-    from langchain.llms import OpenAI
-except Exception:
-    try:
-        from langchain_community.llms import OpenAI
-    except Exception:
-        OpenAI = None
-
-try:
-    from langchain.docstore.in_memory import InMemoryDocstore
-except Exception:
-    from langchain_community.docstore.in_memory import InMemoryDocstore
-
-try:
-    from langchain.vectorstores.faiss import FAISS
-except Exception:
-    try:
-        from langchain.vectorstores import FAISS
-    except Exception:
-        from langchain_community.vectorstores.faiss import FAISS
-
-# 其它基础依赖
-import faiss
 import math
+
+# The "generative agents" memory backend (LangChain + faiss + HuggingFace
+# embeddings, which pull in torch) is OPTIONAL. The default BookWorld run path
+# uses build_role_agent_memory(type="naive") -> the lightweight ChromaDB-backed
+# RoleMemory defined below. So we import the heavy deps lazily and degrade
+# gracefully when they are absent, keeping the install slim.
+try:
+    try:
+        from langchain_experimental.generative_agents.memory import GenerativeAgentMemory
+    except Exception:
+        from langchain_experimental.generative_agents import GenerativeAgentMemory
+
+    try:
+        from langchain_classic.retrievers import TimeWeightedVectorStoreRetriever
+    except Exception:
+        from langchain.retrievers import TimeWeightedVectorStoreRetriever
+
+    try:
+        from langchain_huggingface import HuggingFaceEmbeddings
+    except Exception:
+        from langchain_community.embeddings import HuggingFaceEmbeddings
+
+    try:
+        from langchain_community.llms.tongyi import Tongyi
+    except Exception:
+        try:
+            from langchain_community.llms import Tongyi
+        except Exception:
+            Tongyi = None
+
+    try:
+        from langchain.llms import OpenAI
+    except Exception:
+        try:
+            from langchain_community.llms import OpenAI
+        except Exception:
+            OpenAI = None
+
+    try:
+        from langchain.docstore.in_memory import InMemoryDocstore
+    except Exception:
+        from langchain_community.docstore.in_memory import InMemoryDocstore
+
+    try:
+        from langchain.vectorstores.faiss import FAISS
+    except Exception:
+        try:
+            from langchain.vectorstores import FAISS
+        except Exception:
+            from langchain_community.vectorstores.faiss import FAISS
+
+    import faiss
+    _GA_AVAILABLE = True
+except Exception:
+    # LangChain / faiss not installed -> only the "ga" backend is unavailable.
+    _GA_AVAILABLE = False
+    GenerativeAgentMemory = object  # placeholder base so the module still imports
+    Tongyi = None
+    OpenAI = None
 
 
 def build_role_agent_memory(type = "ga",**kwargs):
     if type == "ga":
+        if not _GA_AVAILABLE:
+            raise ImportError(
+                "The 'ga' memory backend needs langchain + faiss + sentence-transformers. "
+                "Install them, or use type='naive' (the default ChromaDB-backed memory)."
+            )
         llm_name = kwargs["llm_name"]
         embedding_name = kwargs["embedding_name"]
         db_name = kwargs["db_name"]

@@ -10,6 +10,9 @@ from datetime import datetime
 from bw_utils import is_image, load_json_file
 from BookWorld import BookWorld
 
+# In-memory store for background story-upload tasks: task_id -> status dict
+_upload_tasks: dict[str, dict] = {}
+
 app = FastAPI()
 default_icon_path = './frontend/assets/images/default-icon.jpg'
 config = load_json_file('config.json')
@@ -122,6 +125,12 @@ manager = ConnectionManager()
 @app.get("/")
 async def get():
     html_file = Path("index.html")
+    return HTMLResponse(html_file.read_text(encoding="utf-8"))
+
+@app.get("/village")
+async def get_village():
+    # AI Village-style top-down spatial view of 大观园.
+    html_file = Path("frontend/village.html")
     return HTMLResponse(html_file.read_text(encoding="utf-8"))
 
 @app.get("/data/{full_path:path}")
@@ -267,6 +276,52 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
         print(f"WebSocket error: {e}")
     finally:
         manager.disconnect(client_id)
+
+@app.post("/api/upload-story")
+async def upload_story(request: Request):
+    """
+    Accept story text, process it with the LLM in the background, and return
+    a task_id the client can poll via GET /api/upload-story/{task_id}.
+    """
+    data = await request.json()
+    story_text = data.get("text", "").strip()
+    title = data.get("title", "Custom Story").strip() or "Custom Story"
+    language = data.get("language", "zh")
+
+    if not story_text:
+        raise HTTPException(status_code=400, detail="story text is empty")
+
+    task_id = datetime.now().strftime("%Y%m%d%H%M%S%f")
+    _upload_tasks[task_id] = {"status": "processing", "step": "initializing", "progress": 0}
+
+    async def _run():
+        loop = asyncio.get_event_loop()
+
+        def progress(step: str, pct: int):
+            _upload_tasks[task_id]["step"] = step
+            _upload_tasks[task_id]["progress"] = pct
+
+        def _process():
+            from modules.story_processor import StoryProcessor
+            processor = StoryProcessor(config["world_llm_name"], progress_callback=progress)
+            return processor.process(story_text, title, language)
+
+        try:
+            result = await loop.run_in_executor(None, _process)
+            _upload_tasks[task_id] = {"status": "done", **result}
+        except Exception as exc:
+            _upload_tasks[task_id] = {"status": "error", "error": str(exc)}
+
+    asyncio.create_task(_run())
+    return {"task_id": task_id}
+
+
+@app.get("/api/upload-story/{task_id}")
+async def get_upload_status(task_id: str):
+    if task_id not in _upload_tasks:
+        raise HTTPException(status_code=404, detail="task not found")
+    return _upload_tasks[task_id]
+
 
 @app.post("/api/save-config")
 async def save_config(request: Request):
