@@ -7,6 +7,13 @@ import re
 import random
 import base64
 
+# Load secrets (e.g. ZHIPUAI_API_KEY) from a gitignored .env if present.
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
+
 MODEL_NAME_DICT = {
     "gpt-3.5":"openai/gpt-3.5-turbo",
     "gpt-4":"openai/gpt-4",
@@ -71,6 +78,10 @@ def get_models(model_name):
         elif model_name.startswith('gemini-2.5-pro'):
             return Gemini(model="gemini-2.5-pro-preview-05-06")
         return Gemini()
+    elif model_name.startswith('glm') or model_name.startswith('charglm'):
+        # BigModel / Zhipu GLM family via OpenAI-compatible endpoint.
+        from modules.llm.GLM import GLM
+        return GLM(model=model_name)
     else:
         print(f'Warning! undefined model {model_name}, use gpt-4o-mini instead.')
         from modules.llm.LangChainGPT import LangChainGPT

@@ -964,6 +964,7 @@ class BookWorld():
                 location = f"Reaching {location_name}... ({distance})"
             chara_info = {
                 "id": i,
+                "code": code,
                 "name": agent.nickname,
                 "icon": agent.icon_path,
                 "description": agent.role_profile,
@@ -984,6 +985,7 @@ class BookWorld():
             icon_path = ""
         message = {
             'username': username,
+            'code': code,  # role_code of the speaker ("" for world/system) — used by the village view
             'type': message_type, # role, world, system
             'timestamp': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'text': text,
@@ -1056,6 +1058,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--world_llm', type=str, default='gpt-4o-mini')
     parser.add_argument('--role_llm', type=str, default='gpt-4o-mini')
+    parser.add_argument('--embedding', type=str, default='embedding-3')
     parser.add_argument('--genre', type=str, default='mgdv2')
     parser.add_argument('--preset_path', type=str, default='')
 
@@ -1077,7 +1080,7 @@ if __name__ == "__main__":
     if not preset_path:
         preset_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),f"./experiment_presets/experiment_{genre}.json")
     
-    bw = BookWorld(preset_path, world_llm_name=world_llm_name, role_llm_name=role_llm_name)
+    bw = BookWorld(preset_path, world_llm_name=world_llm_name, role_llm_name=role_llm_name, embedding_name=args.embedding)
     bw.set_generator(rounds = rounds, save_dir = save_dir, if_save = if_save, scene_mode = scene_mode,mode = mode)
     
     for i in range(100):

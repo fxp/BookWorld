@@ -1,0 +1,204 @@
+/* Upload Story Modal */
+.upload-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-modal-overlay.active {
+    display: flex;
+}
+
+.upload-modal {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    width: min(520px, 90vw);
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.upload-modal h3 {
+    margin: 0;
+    color: #5f3737;
+    font-size: 1.1rem;
+}
+
+.upload-modal label {
+    font-size: 0.85rem;
+    color: #444;
+    margin-bottom: 2px;
+    display: block;
+}
+
+.upload-modal input[type="text"],
+.upload-modal select,
+.upload-modal textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    color: #333;
+    background: #fafafa;
+}
+
+.upload-modal textarea {
+    height: 180px;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.5;
+}
+
+.upload-modal-row {
+    display: flex;
+    gap: 12px;
+}
+
+.upload-modal-row > div {
+    flex: 1;
+}
+
+.upload-modal-hint {
+    font-size: 0.78rem;
+    color: #888;
+    margin-top: 2px;
+}
+
+/* file input area */
+.upload-file-area {
+    border: 2px dashed #c8a0a0;
+    border-radius: 6px;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    color: #999;
+    font-size: 0.85rem;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.upload-file-area:hover {
+    border-color: #5f3737;
+    background: #fdf5f5;
+}
+
+.upload-file-area input[type="file"] {
+    display: none;
+}
+
+/* progress bar */
+.upload-progress-wrap {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.upload-progress-wrap.active {
+    display: flex;
+}
+
+.upload-progress-bar-track {
+    width: 100%;
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.upload-progress-bar-fill {
+    height: 100%;
+    background: #5f3737;
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    width: 0%;
+}
+
+.upload-progress-label {
+    font-size: 0.82rem;
+    color: #666;
+    text-align: center;
+}
+
+/* action buttons */
+.upload-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.upload-cancel-btn {
+    padding: 8px 20px;
+    background: #f0f0f0;
+    color: #555;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.upload-cancel-btn:hover {
+    background: #e0e0e0;
+}
+
+.upload-submit-btn {
+    padding: 8px 20px;
+    background: #5f3737;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+
+.upload-submit-btn:hover {
+    background: #7a4747;
+}
+
+.upload-submit-btn:disabled {
+    background: #bbb;
+    cursor: not-allowed;
+}
+
+/* success state */
+.upload-success {
+    background: #f0fff4;
+    border: 1px solid #b2dfdb;
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 0.88rem;
+    color: #2e7d52;
+    display: none;
+}
+
+.upload-success.active {
+    display: block;
+}
+
+/* upload button in preset panel */
+.preset-upload-btn {
+    padding: 10px;
+    background: #fff;
+    color: #5f3737;
+    border: 1px solid #5f3737;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    width: 100%;
+    font-size: 0.9rem;
+}
+
+.preset-upload-btn:hover {
+    background: #5f3737;
+    color: #fff;
+}
